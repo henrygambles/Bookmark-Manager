@@ -1,3 +1,6 @@
+require 'pg'
+
+
 class Bookmark
 
     # def initialize
@@ -5,7 +8,12 @@ class Bookmark
     # end 
 
     def self.all
-        @bookmark= ['http://www.google.com', 'http://www.yahoo.com']
+        connection = PG.connect( dbname: 'bookmark_manager' )
+        result = connection.exec("SELECT * FROM bookmarks")
+        result.map { |bookmark| bookmark['url'] } 
+        #bookmarks is a table
+        #bookmark_manager is name of database
+
     end 
 
 
