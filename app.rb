@@ -1,26 +1,27 @@
 require 'sinatra/base'
-require_relative './lib/bookmark'
-
-
+require_relative './lib/bookmark.rb'
 
 class BookmarkManager < Sinatra::Base
-    get '/' do
-    erb(:index)
-    end
+  # get '/' do
+  #   'Welcome to Bookmark Manager'
+  # end
+  enable :method_override
 
-    get '/bookmarks' do 
- 
-        @bookmark= Bookmark.all
-        p @bookmark
-    erb(:'bookmarks/index')
-    end
+  get '/bookmarks' do
+    @bookmarks = Bookmark.all
+    erb :'bookmarks/index'
+  end
 
-    run! if app_file == $0
+  post '/bookmarks/create' do
+    Bookmark.create(params[:url], params[:title])
+    @bookmarks = Bookmark.all
+    redirect '/bookmarks'
+  end
 
+  delete '/bookmarks/:id' do
+    Bookmark.delete(params[:id])
+    redirect '/bookmarks'
+  end
+
+  run! if app_file == $0
 end
-
-
-
-
-
-    

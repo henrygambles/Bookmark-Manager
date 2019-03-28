@@ -1,20 +1,44 @@
+
 require 'pg'
-
-
 class Bookmark
+  attr_reader :id, :url, :title
 
-    # def initialize
+  def initialize(id, url, title)
+    @id = id
+    @url = url
+    @title = title
+  end
 
-    # end 
+  def self.all
+    if ENV['RACK_ENV'] == 'test'
+      connection = PG.connect :dbname => 'bookmark_manager_test'
+    else
+      connection = PG.connect :dbname => 'bookmark_manager'
+    end
 
-    def self.all
-        connection = PG.connect( dbname: 'bookmark_manager' )
-        result = connection.exec("SELECT * FROM bookmarks")
-        result.map { |bookmark| bookmark['url'] } 
-        #bookmarks is a table
-        #bookmark_manager is name of database
+    results = connection.exec "SELECT * FROM bookmarks;"
+    results.map { |bookmark| Bookmark.new(bookmark['id'], bookmark['url'], bookmark['title']) }
+  end
 
-    end 
+  def self.create(url, title)
+    if ENV['RACK_ENV'] == 'test'
+      connection = PG.connect :dbname => 'bookmark_manager_test'
+    else
+      connection = PG.connect :dbname => 'bookmark_manager'
+    end
 
+    results = connection.exec "INSERT INTO bookmarks (url, title) VALUES ('#{url}', '#{title}') RETURNING id, url, title;"
+    Bookmark.new(results[0]['id'], results[0]['url'], results[0]['title'])
+  end
 
+  def self.delete(id)
+    if ENV['RACK_ENV'] == 'test'
+      connection = PG.connect :dbname => 'bookmark_manager_test'
+    else
+      connection = PG.connect :dbname => 'bookmark_manager'
+    end
+
+    results = connection.exec "DELETE FROM bookmarks WHERE id = '#{id}';"
+    results.map { |bookmark| Bookmark.new(bookmark['id'], bookmark['url'], bookmark['title']) }
+  end
 end
